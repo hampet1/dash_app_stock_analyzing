@@ -10,7 +10,7 @@ import plotly.express as px
 from assets.styles import SIDEBAR,TOPBAR,CONTENT
 
 # importing function for importing and calculation data
-from functions.funtions import get_data, get_data_2, calculate_log_return
+from functions.funtions import get_data, calculate_log_return, top_ten_active_stocks
 
 # initialize dash
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -20,23 +20,12 @@ app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 sidebar = dbc.FormGroup(
     [
-        html.P('Stock tickers',
+        html.P('most active stocks',
                style={ 'textAlign': 'center'}),
         dcc.Dropdown(
             id='dropdown',
-            options=[{
-                'label': 'TESLA',
-                'value': 'TSLA'
-            }, {
-                'label': 'MICROSOFT',
-                'value': 'MSFT'
-            },
-                {
-                'label': 'GOOGLE',
-                'value': 'GOOGL'
-                }
-            ],
-            value=['TSLA'],  # default value
+            # pick one of the top ten active stock
+            options= top_ten_active_stocks(),
             multi=False
         ),
         html.Br(),
@@ -150,14 +139,20 @@ app.layout = html.Div([
      ])
 
 def current_price(n_clicks, dropdown_value):
-    value = dropdown_value
-    # choosing last value (todays value) and only price
-    value = dropdown_value
-    # get data accepts a single element
-    df = get_data(value)
-    print("data for price ", df)
-    price = round((df.iloc[-1]),2)
-    return price
+    """
+     choosing last value (todays value) and only price
+     using error handling to avoid error associated with None value is dropdown value parameter
+    """
+    if dropdown_value is None:
+        raise PreventUpdate
+    else:
+        value = dropdown_value
+        print(dropdown_value)
+        # get data accepts a single element
+        df = get_data(value)
+        print("data for price ", df)
+        price = round((df.iloc[-1]),2)
+        return price
 
 
 @app.callback(
@@ -173,46 +168,51 @@ def current_price(n_clicks, dropdown_value):
 def graph_1(n_clicks, dropdown_value, range_slider_value, check_list_value):
     """
     print price of a given stock
+    using error handling to avoid error associated with None value is dropdown value parameter
     """
-    # dropdown value is a list of values
-    title = "".join(dropdown_value)
-    value = dropdown_value
-    # get data accepts a single element
-    df = get_data(value)
-    fig = px.line(df,x=df.index, y="Adj Close",title= f"{title} price since X", labels = {'x':'Date','y':'Price [USD]'})
-    fig.update_layout(title_x=0.5)
-    # Add range slider
-    fig.update_layout(
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1,
-                         label="1m",
-                         step="month",
-                         stepmode="backward"),
-                    dict(count=6,
-                         label="6m",
-                         step="month",
-                         stepmode="backward"),
-                    dict(count=1,
-                         label="YTD",
-                         step="year",
-                         stepmode="todate"),
-                    dict(count=1,
-                         label="1y",
-                         step="year",
-                         stepmode="backward"),
-                    dict(step="all")
-                ])
-            ),
-            rangeslider=dict(
-                visible=True
-            ),
-            type="date"
-        )
-    )
 
-    return fig
+    if dropdown_value is None:
+        raise PreventUpdate
+    else:
+        # dropdown value is a list of values
+        title = "".join(dropdown_value)
+        value = dropdown_value
+        # get data accepts a single element
+        df = get_data(value)
+        fig = px.line(df,x=df.index, y="Adj Close",title= f"{title} price since X", labels = {'x':'Date','y':'Price [USD]'})
+        fig.update_layout(title_x=0.5)
+        # Add range slider
+        fig.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+                type="date"
+            )
+        )
+
+        return fig
 
 
 
@@ -228,48 +228,52 @@ def graph_1(n_clicks, dropdown_value, range_slider_value, check_list_value):
 def graph_2(n_clicks, dropdown_value, range_slider_value, check_list_value):
     """
     print log rate of return
+    using error handling to avoid error associated with None value is dropdown value parameter
     """
-    title = "".join(dropdown_value)
-    value = dropdown_value
-    # get data accepts a single element
-    df_2= get_data_2(value)
-    log_ret = calculate_log_return(df_2)
-    # just copying indexes(dates) to create another column with date
-    fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} log return",
-                  labels = {'x':'Date','y':'log rate of return [%]'})
-    fig.update_layout(title_x=0.5)
-    # Add range slider
-    fig.update_layout(
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1,
-                         label="1m",
-                         step="month",
-                         stepmode="backward"),
-                    dict(count=6,
-                         label="6m",
-                         step="month",
-                         stepmode="backward"),
-                    dict(count=1,
-                         label="YTD",
-                         step="year",
-                         stepmode="todate"),
-                    dict(count=1,
-                         label="1y",
-                         step="year",
-                         stepmode="backward"),
-                    dict(step="all")
-                ])
-            ),
-            rangeslider=dict(
-                visible=True
-            ),
-            type="date"
+    if dropdown_value is None:
+        raise PreventUpdate
+    else:
+        title = "".join(dropdown_value)
+        value = dropdown_value
+        # get data accepts a single element
+        df= get_data(value)
+        log_ret = calculate_log_return(df)
+        # just copying indexes(dates) to create another column with date
+        fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} log return",
+                      labels = {'x':'Date','y':'log rate of return [%]'})
+        fig.update_layout(title_x=0.5)
+        # Add range slider
+        fig.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+                type="date"
+            )
         )
-    )
 
-    return fig
+        return fig
 
 
 
