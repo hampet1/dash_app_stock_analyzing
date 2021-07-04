@@ -2,13 +2,13 @@ SIDEBAR = {
     'margin-left':'2%',
     'width':'20%',
     'float':'left',
-    'margin-top':'140px',
-    'position':'fixed'
+    'margin-top':'140px'
+    #'position':'fixed'
 }
 
 CONTENT = {
     'padding-top': '20px',
-    'width':'80%',
+    'width':'75%',
     'display':'block',
     'float':'right',
     'margin-top':'100px',

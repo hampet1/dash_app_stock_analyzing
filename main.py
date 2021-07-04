@@ -34,21 +34,38 @@ sidebar = dbc.FormGroup(
             html.P(id='result',style={'color': 'black', 'fontSize': 18})
         ], style={'textAlign':'center'}),
         html.Br(),
-        html.P('Range Slider', style={
-                'textAlign': 'center'
-            }),
-        dcc.RangeSlider(
-            id='range_slider',
-            min=0,
-            max=20,
-            step=0.5,
-            value=[5, 15]
-        ),
+        html.P("how many stocks would you like to buy?"),
+        dcc.Input(id="input1", type="number", style={'margin-left': '25%','width':'50%'}),
+        html.Br(),
+        html.P(id='result2',style={'color': 'black', 'fontSize': 18, 'textAlign':'center'}),
+        html.Br(),
+        html.P("calculate return of investment(ROI) choose type of prediction and period"),
         html.P('Type of prediction', style={
             'textAlign': 'center'
         }),
         dbc.Card([dbc.Checklist(
             id='check_list',
+            options=[{
+                'label': 'Daily return',
+                'value': 'daily_return'
+            },
+                {
+                    'label': 'Value Two',
+                    'value': 'value2'
+                },
+                {
+                    'label': 'Value Three',
+                    'value': 'value3'
+                }
+            ],
+            value=[''],
+            inline=True
+        )]),
+        html.P('Type of prediction', style={
+            'textAlign': 'center'
+        }),
+        dbc.Card([dbc.Checklist(
+            id='check_list_2',
             options=[{
                 'label': 'Daily return',
                 'value': 'daily_return'
@@ -115,7 +132,7 @@ nav = html.Div(
             [
                 html.H4("stock prices & stock predictions"),
                 html.Br(),
-                html.P(['Choose of one the 5 most active stocks or make your own choices on ', dcc.Link('yahoo finance', href='https://finance.yahoo.com/')]),
+                html.P(['Choose of one the 10 most active stocks or make your own choices on ', dcc.Link('yahoo finance', href='https://finance.yahoo.com/')]),
             ],
     style=TOPBAR,
 )
@@ -156,16 +173,39 @@ def current_price(n_clicks, dropdown_value):
 
 
 @app.callback(
+    Output('result2', 'children'),
+    [Input('submit_button', 'n_clicks')],
+    [State('dropdown', 'value'),
+     State('input1', 'value')
+     ])
+
+def total(n_clicks, dropdown_value, input1):
+    """
+     choosing last value (todays value) and only price
+     using error handling to avoid error associated with None value is dropdown value parameter
+    """
+    if dropdown_value is None or input1 is None:
+        raise PreventUpdate
+    else:
+        value = dropdown_value
+        print(dropdown_value)
+        # get data accepts a single element
+        df = get_data(value)
+        print("data for price ", df)
+        price = round((df.iloc[-1]),2)
+        return "total cost is: ",(price * input1)
+
+
+@app.callback(
     Output('graph_1', 'figure'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
-     State('range_slider', 'value'),
      State('check_list', 'value')
      ])
 
 
 #update our graph
-def graph_1(n_clicks, dropdown_value, range_slider_value, check_list_value):
+def graph_1(n_clicks, dropdown_value,  check_list_value):
     """
     print price of a given stock
     using error handling to avoid error associated with None value is dropdown value parameter
@@ -221,11 +261,10 @@ def graph_1(n_clicks, dropdown_value, range_slider_value, check_list_value):
     Output('graph_2', 'figure'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
-     State('range_slider', 'value'),
      State('check_list', 'value')
      ])
 
-def graph_2(n_clicks, dropdown_value, range_slider_value, check_list_value):
+def graph_2(n_clicks, dropdown_value, check_list_value):
     """
     print log rate of return
     using error handling to avoid error associated with None value is dropdown value parameter
