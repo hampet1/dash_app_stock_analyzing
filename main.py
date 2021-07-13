@@ -30,7 +30,7 @@ sidebar = dbc.FormGroup(
         ),
         html.Br(),
         html.Div([
-            html.Div('current price (USD) is:', style={'color': 'blue', 'fontSize': 15}),
+            html.Div('current price (USD) per stock is:', style={'color': 'blue', 'fontSize': 15}),
             html.P(id='result',style={'color': 'black', 'fontSize': 18})
         ], style={'textAlign':'center'}),
         html.Br(),
@@ -39,43 +39,45 @@ sidebar = dbc.FormGroup(
         html.Br(),
         html.P(id='result2',style={'color': 'black', 'fontSize': 18, 'textAlign':'center'}),
         html.Br(),
-        html.P("calculate return of investment(ROI) choose type of prediction and period"),
-        html.P('Type of prediction', style={
+        html.P("calculate return of investment(ROI) and risk (we would like to optimize return and risk of investment)choose type of prediction and period"),
+        html.P('choose prediction model', style={
             'textAlign': 'center'
         }),
         dbc.Card([dbc.Checklist(
             id='check_list',
             options=[{
-                'label': 'Daily return',
+                'label': 'AR',
                 'value': 'daily_return'
-            },
+                },
                 {
-                    'label': 'Value Two',
+                    'label': 'ARIMA',
                     'value': 'value2'
                 },
                 {
-                    'label': 'Value Three',
+                    'label': 'MA',
                     'value': 'value3'
                 }
             ],
             value=[''],
             inline=True
         )]),
-        html.P('Type of prediction', style={
-            'textAlign': 'center'
-        }),
+        html.Br(),
         dbc.Card([dbc.Checklist(
             id='check_list_2',
             options=[{
-                'label': 'Daily return',
+                'label': 'daily return ',
                 'value': 'daily_return'
             },
                 {
-                    'label': 'Value Two',
+                    'label': 'weekly return',
                     'value': 'value2'
                 },
                 {
-                    'label': 'Value Three',
+                    'label': 'quarterly return',
+                    'value': 'value3'
+                },
+{
+                    'label': 'yearly return',
                     'value': 'value3'
                 }
             ],
@@ -278,7 +280,7 @@ def graph_2(n_clicks, dropdown_value, check_list_value):
         df= get_data(value)
         log_ret = calculate_log_return(df)
         # just copying indexes(dates) to create another column with date
-        fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} log return",
+        fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} log daily return",
                       labels = {'x':'Date','y':'log rate of return [%]'})
         fig.update_layout(title_x=0.5)
         # Add range slider

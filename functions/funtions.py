@@ -20,11 +20,7 @@ def get_data(ticker):
 
 def calculate_log_return(data):
     """
-    we're using Monte Carlo method to predict
-    possible stock prices in the future
-    as a generator of random values we're using brownian motion
-
-    input data is in form of pandas DataFrame datatype
+    log return - calculate return of investment
     """
 
     # calculate log(Adj Close / Adj Close.shift(1)) - current_day/previous_day - to calculate rate of return, and times 100 because we can percentage
