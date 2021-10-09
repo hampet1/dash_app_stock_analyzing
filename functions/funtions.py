@@ -24,6 +24,8 @@ def calculate_log_return(data):
     """
 
     # calculate log(Adj Close / Adj Close.shift(1)) - current_day/previous_day - to calculate rate of return, and times 100 because we can percentage
+    # 1 + just to make it more clear that we're talking about percentage change
+
     log_return = np.log(1 + data.pct_change())*100
     return log_return
 

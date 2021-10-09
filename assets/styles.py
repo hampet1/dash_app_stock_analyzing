@@ -2,7 +2,7 @@ SIDEBAR = {
     'margin-left':'2%',
     'width':'20%',
     'float':'left',
-    'margin-top':'140px'
+    'margin-top':'140px',
     #'position':'fixed'
 }
 
@@ -21,8 +21,9 @@ TOPBAR ={
     'width':'100%',
     'height':'120px',
     'position':'fixed',
-    'z-index':'1',
+    'z-index':'100000000',
     'color':'white',
     'textAlign':'center',
     'padding-top':'1%'
 }
+

@@ -12,6 +12,9 @@ from assets.styles import SIDEBAR,TOPBAR,CONTENT
 # importing function for importing and calculation data
 from functions.funtions import get_data, calculate_log_return, top_ten_active_stocks
 
+# import stats models for forecasting
+from models.models import arma_model
+
 # initialize dash
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -50,11 +53,11 @@ sidebar = dbc.FormGroup(
                 'value': 'daily_return'
                 },
                 {
-                    'label': 'ARIMA',
+                    'label': 'MA',
                     'value': 'value2'
                 },
                 {
-                    'label': 'MA',
+                    'label': 'ARMA',
                     'value': 'value3'
                 }
             ],
@@ -65,20 +68,16 @@ sidebar = dbc.FormGroup(
         dbc.Card([dbc.Checklist(
             id='check_list_2',
             options=[{
-                'label': 'daily return ',
-                'value': 'daily_return'
+                'label': '1 day forecasting',
+                'value': 'val1_forcast'
             },
                 {
-                    'label': 'weekly return',
-                    'value': 'value2'
+                    'label': '3 days forecasting',
+                    'value': 'val2_forcast'
                 },
-                {
-                    'label': 'quarterly return',
-                    'value': 'value3'
-                },
-{
-                    'label': 'yearly return',
-                    'value': 'value3'
+            {
+                    'label': '7 days forecasting',
+                    'value': 'val3_forcast'
                 }
             ],
             value=[''],
@@ -281,6 +280,64 @@ def graph_2(n_clicks, dropdown_value, check_list_value):
         log_ret = calculate_log_return(df)
         # just copying indexes(dates) to create another column with date
         fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} log daily return",
+                      labels = {'x':'Date','y':'log rate of return [%]'})
+        fig.update_layout(title_x=0.5)
+        # Add range slider
+        fig.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+                type="date"
+            )
+        )
+
+        return fig
+
+@app.callback(
+    Output('graph_3', 'figure'),
+    [Input('submit_button', 'n_clicks')],
+    [State('dropdown', 'value'),
+     State('check_list', 'value')
+     ])
+
+# graph 3
+def graph_3(n_clicks, dropdown_value, check_list_value):
+    """
+    print log rate of return
+    using error handling to avoid error associated with None value is dropdown value parameter
+    """
+    if dropdown_value is None:
+        raise PreventUpdate
+    else:
+        title = "".join(dropdown_value)
+        value = dropdown_value
+        # get data accepts a single element
+        df= get_data(value)
+        log_ret = calculate_log_return(df)
+        # just copying indexes(dates) to create another column with date
+        fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} ARIMA return forecasting",
                       labels = {'x':'Date','y':'log rate of return [%]'})
         fig.update_layout(title_x=0.5)
         # Add range slider
