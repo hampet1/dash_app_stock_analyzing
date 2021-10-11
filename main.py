@@ -43,6 +43,7 @@ sidebar = dbc.FormGroup(
         html.P(id='result2',style={'color': 'black', 'fontSize': 18, 'textAlign':'center'}),
         html.Br(),
         html.P("calculate return of investment(ROI) and risk (we would like to optimize return and risk of investment)choose type of prediction and period"),
+        html.Hr(),
         html.P('choose prediction model', style={
             'textAlign': 'center'
         }),
@@ -65,24 +66,28 @@ sidebar = dbc.FormGroup(
             inline=True
         )]),
         html.Br(),
-        dbc.Card([dbc.Checklist(
-            id='check_list_2',
-            options=[{
-                'label': '1 day forecasting',
-                'value': 'val1_forcast'
+        html.Hr(),
+        html.H6("forecast up to 7 days ahead stock price", style={
+            'textAlign': 'center'}),
+        dbc.Card([dcc.Slider(
+            id='my_slider',
+            min=0,
+            max=7,
+            step=1,
+            value=0,
+            marks={
+                0: '0',
+                1: '1',
+                2: '2',
+                3: '3',
+                4: '4',
+                5: '5',
+                6: '6',
+                7: '7'
             },
-                {
-                    'label': '3 days forecasting',
-                    'value': 'val2_forcast'
-                },
-            {
-                    'label': '7 days forecasting',
-                    'value': 'val3_forcast'
-                }
-            ],
-            value=[''],
-            inline=True
-        )]),
+        ),
+            html.Div(id='slider_output_container')
+        ]),
             html.Br(),
             html.Br(),
             dbc.Button(
