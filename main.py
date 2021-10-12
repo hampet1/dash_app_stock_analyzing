@@ -63,7 +63,6 @@ sidebar = dbc.FormGroup(
                     'value': 'ARMA'
                 }
             ],
-            value=[''],
             inline=True
         )]),
         html.Br(),
@@ -333,11 +332,14 @@ def graph_3(n_clicks, dropdown_value, check_list, forecast):
     """
     if dropdown_value is None:
         raise PreventUpdate
+    if check_list == []:
+        raise PreventUpdate
     else:
         # dropdown value is a list of values
         #title = "".join(dropdown_value)
         value = dropdown_value
-        type_of_model = check_list[1]
+        # check out the value
+        type_of_model = check_list
         # get data accepts a single element
         df = get_data(value)
         log_ret = calculate_log_return(df)
