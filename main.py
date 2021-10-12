@@ -340,14 +340,11 @@ def graph_3(n_clicks, dropdown_value, check_list):
         # dropdown value is a list of values
         #title = "".join(dropdown_value)
         value = dropdown_value
-        print("value", value)
         type_of_model = check_list[1]
-        print("type of model: ", type_of_model)
         # get data accepts a single element
         df= get_data(value)
-        log_ret = calculate_log_return(df)[1:]
+        log_ret = calculate_log_return(df)
         log_ret = pd.DataFrame(log_ret, columns=["Adj Close"])
-        print(log_ret)
         our_model = arma_model(log_ret,type_of_model,2)
 
         # just copying indexes(dates) to create another column with date
