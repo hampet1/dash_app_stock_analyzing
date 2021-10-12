@@ -14,8 +14,10 @@ def get_data(ticker):
     data is in form of pandas dataframe with two columns data and closing price (close)
     """
     df = yf.download(ticker)
-    df_main = df["Adj Close"]
-    return df_main
+    df = df["Adj Close"]
+    df = df.asfreq('b')
+    df = df.fillna(method='ffill')
+    return df
 
 
 def calculate_log_return(data):

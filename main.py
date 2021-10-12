@@ -5,6 +5,7 @@ from dash.exceptions import PreventUpdate
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
+import pandas as pd
 
 # style defined using python dictionary syntax
 from assets.styles import SIDEBAR,TOPBAR,CONTENT
@@ -51,15 +52,15 @@ sidebar = dbc.FormGroup(
             id='check_list',
             options=[{
                 'label': 'AR',
-                'value': 'daily_return'
+                'value': 'AR'
                 },
                 {
                     'label': 'MA',
-                    'value': 'value2'
+                    'value': 'MA'
                 },
                 {
                     'label': 'ARMA',
-                    'value': 'value3'
+                    'value': 'ARMA'
                 }
             ],
             value=[''],
@@ -328,7 +329,7 @@ def graph_2(n_clicks, dropdown_value, check_list_value):
      ])
 
 # graph 3
-def graph_3(n_clicks, dropdown_value, check_list_value):
+def graph_3(n_clicks, dropdown_value, check_list):
     """
     print log rate of return
     using error handling to avoid error associated with None value is dropdown value parameter
@@ -336,13 +337,21 @@ def graph_3(n_clicks, dropdown_value, check_list_value):
     if dropdown_value is None:
         raise PreventUpdate
     else:
-        title = "".join(dropdown_value)
+        # dropdown value is a list of values
+        #title = "".join(dropdown_value)
         value = dropdown_value
+        print("value", value)
+        type_of_model = check_list[1]
+        print("type of model: ", type_of_model)
         # get data accepts a single element
         df= get_data(value)
-        log_ret = calculate_log_return(df)
+        log_ret = calculate_log_return(df)[1:]
+        log_ret = pd.DataFrame(log_ret, columns=["Adj Close"])
+        print(log_ret)
+        our_model = arma_model(log_ret,type_of_model,2)
+
         # just copying indexes(dates) to create another column with date
-        fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} ARIMA return forecasting",
+        fig = px.line(our_model,x=our_model.index, y="Adj Close", title= f" forecasting using {type_of_model}",
                       labels = {'x':'Date','y':'log rate of return [%]'})
         fig.update_layout(title_x=0.5)
         # Add range slider
