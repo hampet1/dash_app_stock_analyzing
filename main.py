@@ -71,7 +71,7 @@ sidebar = dbc.FormGroup(
         html.H6("forecast up to 7 days ahead stock price", style={
             'textAlign': 'center'}),
         dbc.Card([dcc.Slider(
-            id='my_slider',
+            id='forecast',
             min=0,
             max=7,
             step=1,
@@ -94,6 +94,7 @@ sidebar = dbc.FormGroup(
             dbc.Button(
             # it's component for state
             id='submit_button',
+            # n_clicks - component property
             n_clicks=0,
             children='Submit',
             color='primary',
@@ -171,10 +172,8 @@ def current_price(n_clicks, dropdown_value):
         raise PreventUpdate
     else:
         value = dropdown_value
-        print(dropdown_value)
         # get data accepts a single element
         df = get_data(value)
-        print("data for price ", df)
         price = round((df.iloc[-1]),2)
         return price
 
@@ -195,10 +194,8 @@ def total(n_clicks, dropdown_value, input1):
         raise PreventUpdate
     else:
         value = dropdown_value
-        print(dropdown_value)
         # get data accepts a single element
         df = get_data(value)
-        print("data for price ", df)
         price = round((df.iloc[-1]),2)
         return "total cost is: ",(price * input1)
 
@@ -267,11 +264,10 @@ def graph_1(n_clicks, dropdown_value,  check_list_value):
 @app.callback(
     Output('graph_2', 'figure'),
     [Input('submit_button', 'n_clicks')],
-    [State('dropdown', 'value'),
-     State('check_list', 'value')
+    [State('dropdown', 'value')
      ])
 
-def graph_2(n_clicks, dropdown_value, check_list_value):
+def graph_2(n_clicks, dropdown_value):
     """
     print log rate of return
     using error handling to avoid error associated with None value is dropdown value parameter
@@ -325,11 +321,12 @@ def graph_2(n_clicks, dropdown_value, check_list_value):
     Output('graph_3', 'figure'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
-     State('check_list', 'value')
+     State('check_list', 'value'),
+     State('forecast', 'value')
      ])
 
 # graph 3
-def graph_3(n_clicks, dropdown_value, check_list):
+def graph_3(n_clicks, dropdown_value, check_list, forecast):
     """
     print log rate of return
     using error handling to avoid error associated with None value is dropdown value parameter
@@ -342,10 +339,11 @@ def graph_3(n_clicks, dropdown_value, check_list):
         value = dropdown_value
         type_of_model = check_list[1]
         # get data accepts a single element
-        df= get_data(value)
+        df = get_data(value)
         log_ret = calculate_log_return(df)
+        days_forecast = forecast
         log_ret = pd.DataFrame(log_ret, columns=["Adj Close"])
-        our_model = arma_model(log_ret,type_of_model,2)
+        our_model = arma_model(log_ret,type_of_model,days_forecast)
 
         # just copying indexes(dates) to create another column with date
         fig = px.line(our_model,x=our_model.index, y="Adj Close", title= f" forecasting using {type_of_model}",
