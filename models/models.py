@@ -19,23 +19,29 @@ def arma_model(train, type_of_model, days_forecast):
         order_AR = 2
         order_MA = 2
     else:
-        return "wrong data type or wrong term, the only correct arguments are AR, MA or ARMA"
+        # we are not using any model - so just return input data
+        output_data = train[["Adj Close"]]
+        return output_data
 
-    model_arma = stats.ARIMA(train, order=(order_AR, 0, order_MA))
-    results_ar = model_arma.fit()
-    # forecasting
-    pred = results_ar.forecast(days_forecast)
+    if days_forecast > 0:
+        model_arma = stats.ARIMA(train, order=(order_AR, 0, order_MA))
+        results_ar = model_arma.fit()
+        # forecasting
+        pred = results_ar.forecast(days_forecast)
 
-    # todays date
-    today_date = str(train.index[-1].year) + '-' + str(train.index[-1].month) + '-' + str(train.index[-1].day)
-    # future predicted business dates
-    s = pd.date_range(today_date, periods=days_forecast + 1, freq='b')[1:]
+        # todays date
+        today_date = str(train.index[-1].year) + '-' + str(train.index[-1].month) + '-' + str(train.index[-1].day)
+        # future predicted business dates
+        s = pd.date_range(today_date, periods=days_forecast + 1, freq='b')[1:]
 
-    df = pd.DataFrame(pred)
-    df = df.rename(columns={"predicted_mean": "Adj Close"})
+        df = pd.DataFrame(pred)
+        df = df.rename(columns={"predicted_mean": "Adj Close"})
 
-    output_data = train[["Adj Close"]]
-    output_data = output_data.append(df, ignore_index=False)
+        output_data = train[["Adj Close"]]
+        output_data = output_data.append(df, ignore_index=False)
 
-    return output_data
-
+        return output_data
+    else:
+        # if we're not forecasting - return input data
+        output_data = train[["Adj Close"]]
+        return output_data
