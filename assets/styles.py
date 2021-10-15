@@ -7,6 +7,16 @@ SIDEBAR = {
 }
 
 CONTENT = {
+    'padding-top': '5px',
+    'width':'77%',
+    'display':'block',
+    'float':'right',
+    'margin-top':'20px',
+    'z - index': '1'
+}
+
+
+CONTENT_TOP = {
     'padding-top': '20px',
     'width':'75%',
     'display':'block',
@@ -26,4 +36,5 @@ TOPBAR ={
     'textAlign':'center',
     'padding-top':'1%'
 }
+
 

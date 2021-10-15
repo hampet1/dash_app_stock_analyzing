@@ -2,6 +2,8 @@ import yfinance as yf
 import numpy as np
 from bs4 import BeautifulSoup
 import requests
+from dash.exceptions import PreventUpdate
+from dash.dependencies import Input, Output, State
 from scipy.stats import norm
 from datetime import date
 import pandas as pd
@@ -13,11 +15,14 @@ def get_data(ticker):
     getting data in form of dataframe using yahoo finance
     data is in form of pandas dataframe with two columns data and closing price (close)
     """
-    df = yf.download(ticker)
-    df = df["Adj Close"]
-    df = df.asfreq('b')
-    df = df.fillna(method='ffill')
-    return df
+    try:
+        df = yf.download(ticker)
+        df = df["Adj Close"]
+        df = df.asfreq('b')
+        df = df.fillna(method='ffill')
+        return df
+    except:
+        raise PreventUpdate
 
 
 def calculate_log_return(data):
