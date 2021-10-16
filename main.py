@@ -9,7 +9,7 @@ import pandas as pd
 import math
 
 # style defined using python dictionary syntax
-from assets.styles import SIDEBAR,TOPBAR,CONTENT,CONTENT_TOP
+from assets.styles import SIDEBAR,TOPBAR,CONTENT,CONTENT_TOP, FOOTER
 
 
 # importing function for importing and calculation data
@@ -40,7 +40,7 @@ sidebar = dbc.FormGroup(
         ]),
         html.Br(),
         html.P("how many stocks to buy?", style={ 'textAlign': 'center'}),
-        dcc.Input(id="input1", type="number", style={'margin-left': '25%','width':'50%'}),
+        dcc.Input(id="input1", type="number", placeholder="e.g. 10",  style={'margin-left': '25%','width':'50%'}),
         html.Br(),
         html.Br(),
         html.P("avg return and volatility last X days", style={ 'textAlign': 'center'}),
@@ -72,7 +72,7 @@ sidebar = dbc.FormGroup(
         )]),
         html.Br(),
         html.Hr(),
-        html.H6("forecast up to 7 days ahead stock price", style={
+        html.P("forecast up to 7 days ahead stock price", style={
             'textAlign': 'center'}),
         dbc.Card([dcc.Slider(
             id='forecast',
@@ -150,7 +150,14 @@ nav = html.Div(
     style=TOPBAR,
 )
 
-
+footer = html.Footer([
+    html.Div([
+        html.P("Created by Petr Hamrozi. Disclaimer: Forecasting is for illustrative purposes only and it is not "
+               "intended to serve as investment advice")
+    ],
+    style=FOOTER,
+    )
+])
 
 # the whole layout
 app.layout = html.Div([
@@ -158,7 +165,8 @@ app.layout = html.Div([
     sidebar,
     content_second_row,
     content_third_row,
-    content_forth_row
+    content_forth_row,
+    footer
 ])
 
 
