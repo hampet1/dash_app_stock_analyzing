@@ -31,7 +31,7 @@ TOPBAR ={
     'width':'100%',
     'height':'120px',
     'position':'fixed',
-    'z-index':'1',
+    'z-index':'1000000000000',
     'color':'white',
     'textAlign':'center',
     'padding-top':'1%'

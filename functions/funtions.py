@@ -38,7 +38,11 @@ def calculate_log_return(data):
 
 
 def mean_of_log_return(log_return):
-    return log_return.mean()*100
+    return round(log_return.tail(30).mean(),2)
+
+
+def risk_of_return(log_return):
+    return round(log_return.tail(30).std(),2)
 
 
 def top_ten_active_stocks():

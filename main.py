@@ -13,7 +13,7 @@ from assets.styles import SIDEBAR,TOPBAR,CONTENT,CONTENT_TOP
 
 
 # importing function for importing and calculation data
-from functions.funtions import get_data, calculate_log_return, top_ten_active_stocks
+from functions.funtions import get_data, calculate_log_return, top_ten_active_stocks, mean_of_log_return, risk_of_return
 
 # import stats models for forecasting
 from models.models import arma_model
@@ -36,19 +36,23 @@ sidebar = dbc.FormGroup(
         html.Br(),
         html.H6("Look up an arbitrary stock ticker", style={ 'textAlign': 'center'}),
         html.Div([
-                dcc.Input(id='stock_ticker', placeholder="e.g. MSFT", type='text', style={'margin-left': '25%','width':'50%'})
+                dcc.Input(id='stock_ticker', type='text', placeholder="e.g. MSFT", style={'margin-left': '25%','width':'50%'})
         ]),
         html.Br(),
         html.P("how many stocks to buy?", style={ 'textAlign': 'center'}),
         dcc.Input(id="input1", type="number", style={'margin-left': '25%','width':'50%'}),
+        html.Br(),
+        html.Br(),
+        html.P("avg return and volatility last X days", style={ 'textAlign': 'center'}),
+        dcc.Input(id="input2", type="number", placeholder="e.g. 5",style={'margin-left': '25%','width':'50%'}),
         html.Br(),
         html.P(id='result',style={'color': 'blue', 'fontSize': 18, 'textAlign':'center'}),
         html.Hr(),
         html.P('choose prediction model', style={
             'textAlign': 'center'
         }),
-        dbc.Card([dbc.Checklist(
-            id='check_list',
+        dbc.Card([dbc.RadioItems(
+            id='radio_button',
             options=[{
                 'label': 'AR',
                 'value': 'AR'
@@ -62,7 +66,9 @@ sidebar = dbc.FormGroup(
                     'value': 'ARMA'
                 }
             ],
-            inline=True
+            inline=True,
+            style={'textAlign':'center'}
+
         )]),
         html.Br(),
         html.Hr(),
@@ -159,9 +165,6 @@ app.layout = html.Div([
 
 
 
-
-
-
 @app.callback(
     Output('result', 'children'),
     [Input('submit_button', 'n_clicks')],
@@ -192,13 +195,13 @@ def total(n_clicks, dropdown_value, input1, stock_ticker):
 
 
 @app.callback(
-    Output('stock_ticker','value'),
     Output('dropdown','value'),
     Output('graph_1', 'figure'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
      State('stock_ticker','value')
-     ])
+     ],
+    prevent_initial_call=True)
 
 
 #update our graph
@@ -207,8 +210,16 @@ def graph_1(n_clicks, dropdown_value,  stock_ticker):
     print price of a given stock
     using error handling to avoid error associated with None value is dropdown value parameter
     """
-
+    if dropdown_value is None and stock_ticker is None:
+        raise PreventUpdate
     print("arbitrary tick is: ", stock_ticker)
+
+    if dropdown_value is not None and stock_ticker is not None:
+        title = str(dropdown_value)
+        print("title is", title)
+        value = dropdown_value
+        print("value is:", value)
+
     if dropdown_value is not None:
         title = str(dropdown_value)
         print("title is", title)
@@ -218,8 +229,7 @@ def graph_1(n_clicks, dropdown_value,  stock_ticker):
     if stock_ticker is not None:
         value = stock_ticker
         title = stock_ticker
-    if dropdown_value is None and stock_ticker is None:
-        raise PreventUpdate
+
 
     df = get_data(value)
     price = round((df.iloc[-1]), 2)
@@ -256,39 +266,53 @@ def graph_1(n_clicks, dropdown_value,  stock_ticker):
         )
     )
 
-    return '','',fig
+    return 0, fig
 
 
 
 
 @app.callback(
     Output('graph_2', 'figure'),
+    Output('input2','value'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
-     State('stock_ticker','value' )
+     State('stock_ticker','value' ),
+     State('input2','value')
      ])
 
 
 #update our graph
-def graph_2(n_clicks, dropdown_value,  stock_ticker):
+def graph_2(n_clicks, dropdown_value,  stock_ticker, input2):
     """
     print price of a given stock
     using error handling to avoid error associated with None value is dropdown value parameter
     """
+    if dropdown_value is None and stock_ticker is None:
+        raise PreventUpdate
     if dropdown_value is not None:
-        title = str(dropdown_value)
+        title = dropdown_value
         value = dropdown_value
         #title = "".join(dropdown_value)
     if stock_ticker is not None:
         value = stock_ticker
         title = stock_ticker
-    if dropdown_value is None and stock_ticker is None:
-        raise PreventUpdate
+    if input2 is not None:
+        days = input2
+
         # get data accepts a single element
     df= get_data(value)
     log_ret = calculate_log_return(df)
+    # mean of return and volatility, we can't enter more days than the total number of records
+    if input2 and len(log_ret) >= days:
+        avg = mean_of_log_return(log_ret[-days:])
+        # volatility (std) of return last 30 days
+        vol = risk_of_return(log_ret[-days:])
+        text = f"{title} log daily return [%], average return and volatility over last {days} days: {avg}% [return], {vol}% [volatility]"
+    else:
+        text = f"{title} log daily return [%]"
     # just copying indexes(dates) to create another column with date
-    fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= f"{title} log daily return [%]",
+
+    fig = px.line(log_ret,x=log_ret.index, y="Adj Close", title= text,
                   labels = {'x':'Date','y':'log rate of return [%]'})
     fig.update_layout(title_x=0.5)
     # Add range slider
@@ -322,26 +346,26 @@ def graph_2(n_clicks, dropdown_value,  stock_ticker):
         )
     )
 
-    return fig
+    return fig, 0
 
 
 @app.callback(
     Output('graph_3', 'figure'),
     [Input('submit_button', 'n_clicks'),
      State('dropdown', 'value'),
-     State('check_list', 'value'),
+     State('radio_button', 'value'),
      State('forecast', 'value')
      ])
 
 # graph 3
-def graph_3(n_clicks, dropdown_value, check_list, forecast):
+def graph_3(n_clicks, dropdown_value, radio_button, forecast):
     """
     print log rate of return
     using error handling to avoid error associated with None value is dropdown value parameter
     """
     if dropdown_value is None:
         raise PreventUpdate
-    if check_list == []:
+    if radio_button == None:
         raise PreventUpdate
     if forecast == 0:
         raise PreventUpdate
@@ -351,16 +375,16 @@ def graph_3(n_clicks, dropdown_value, check_list, forecast):
         #title = "".join(dropdown_value)
         value = dropdown_value
         # check out the value
-        type_of_model = check_list
+        type_of_model = str(radio_button)
         # get data accepts a single element
         df = get_data(value)
         log_ret = calculate_log_return(df)
         days_forecast = forecast
         log_ret = pd.DataFrame(log_ret, columns=["Adj Close"])
         our_model = arma_model(log_ret,type_of_model,days_forecast)
-
+        last_50 = our_model.tail(50)
         # just copying indexes(dates) to create another column with date
-        fig = px.line(our_model,x=our_model.index, y="Adj Close", title= f" forecasting using {type_of_model}",
+        fig = px.line(last_50,x=last_50.index, y="Adj Close", title= f" forecasting using {type_of_model}",
                       labels = {'x':'Date','y':'log rate of return [%]'})
         fig.update_layout(title_x=0.5)
         # Add range slider
@@ -372,17 +396,9 @@ def graph_3(n_clicks, dropdown_value, check_list, forecast):
                              label="1m",
                              step="month",
                              stepmode="backward"),
-                        dict(count=6,
-                             label="6m",
-                             step="month",
-                             stepmode="backward"),
-                        dict(count=1,
-                             label="YTD",
-                             step="year",
-                             stepmode="todate"),
-                        dict(count=1,
-                             label="1y",
-                             step="year",
+                        dict(count=7,
+                             label="1w",
+                             step="day",
                              stepmode="backward"),
                         dict(step="all")
                     ])
