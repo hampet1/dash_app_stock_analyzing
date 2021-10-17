@@ -33,3 +33,5 @@ tenacity==7.0.0
 urllib3==1.26.6
 Werkzeug==2.0.1
 yfinance==0.1.63
+
+statsmodels~=0.13.0

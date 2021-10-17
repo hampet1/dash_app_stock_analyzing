@@ -17,7 +17,9 @@ def get_data(ticker):
     """
     try:
         df = yf.download(ticker)
-        df = df["Adj Close"]
+        # renaming in order to plotly convention for labeling axis (a bit tricky to implement column name with space)
+        df = df.rename(columns={"Adj Close": "Adj_Close"})
+        df = df["Adj_Close"]
         df = df.asfreq('b')
         df = df.fillna(method='ffill')
         return df
@@ -25,7 +27,7 @@ def get_data(ticker):
         raise PreventUpdate
 
 
-def calculate_log_return(data):
+def log_return(data):
     """
     log return - calculate return of investment
     """
@@ -37,7 +39,7 @@ def calculate_log_return(data):
     return log_return
 
 
-def mean_of_log_return(log_return):
+def mean_log_return(log_return):
     return round(log_return.tail(30).mean(),2)
 
 
