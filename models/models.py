@@ -23,7 +23,8 @@ def arma_model(train, type_of_model, days_forecast):
         return output_data
 
     if days_forecast > 0:
-        model_arma = stats.ARIMA(train, order=(order_AR, 0, order_MA))
+        # integrated 1
+        model_arma = stats.ARIMA(train, order=(order_AR, 1, order_MA))
         results_ar = model_arma.fit()
         # forecasting
         pred = results_ar.forecast(days_forecast)

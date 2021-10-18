@@ -6,12 +6,13 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
+import numpy as np
 
 # style defined using python dictionary syntax
 from assets.styles import SIDEBAR, TOPBAR, CONTENT, CONTENT_TOP, FOOTER
 
 # functions for manipulation with default stock price
-from functions.funtions import get_data, log_return, top_ten_active_stocks, mean_log_return, risk_of_return
+from functions.funtions import get_data, log_return, top_ten_active_stocks, mean_log_return, risk_of_return, log
 
 # import stats models for forecasting
 from models.models import arma_model
@@ -292,7 +293,7 @@ def graph_2(n_clicks, dropdown_value, stock_ticker, ret_and_vol):
         avg = mean_log_return(log_ret[-days:])
         # volatility (std) of return
         vol = risk_of_return(log_ret[-days:])
-        text = f"{title} log daily return [%], average return and volatility over last {days} days: {avg}% [return], {vol}% [volatility]"
+        text = f"{title} log daily return [%], average return and volatility over last {days} days: {avg}% [return], {vol}% [volatility] "
     else:
         text = f"{title} log daily return [%]"
     fig = px.line(log_ret, x=log_ret.index, y="Adj_Close", title=text,
@@ -342,7 +343,7 @@ def graph_2(n_clicks, dropdown_value, stock_ticker, ret_and_vol):
 # graph 3
 def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
     """
-    print price history over last 50 days and additional forecasting forecasting model: AR or MA or ARMA AR an MA
+    print price history over last 50 days and additional forecasting model: AR or MA or ARMA AR an MA
     order parameters (in a sense of the number of previous lags included in our model) in our model is by default set
     to 2 with respect to a particular model, in order to avoid any errors and increase the evaluation speed of our model
     as the model is used only for illustrative purposes in the first place.
@@ -350,7 +351,7 @@ def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
     """
     if dropdown_value is None:
         raise PreventUpdate
-    if type_of_model == None:
+    if type_of_model is None:
         raise PreventUpdate
     if forecast == 0:
         raise PreventUpdate
@@ -359,12 +360,15 @@ def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
         value = dropdown_value
         type_of_model = str(type_of_model)
         df = get_data(value)
-        log_ret = log_return(df)
+        # only log data - it's not return cause the model has set up integrated order = 1, so it substitutes pct_change()
+        log_data = log(df)
         days_forecast = forecast
-        print("log ret is",log_ret)
-        log_ret = pd.DataFrame(log_ret, columns=["Adj_Close"])
+        print("log ret is", log_data)
+        log_ret = pd.DataFrame(log_data, columns=["Adj_Close"])
         print("lor ret with a column:", log_ret)
         our_model = arma_model(log_ret, type_of_model, days_forecast)
+        # undo log transform
+        our_model = np.exp(our_model)
         last_50 = our_model.tail(50)
         # just copying indexes(dates) to create another column with date
         fig = px.line(last_50, x=last_50.index, y="Adj_Close", title=f" forecasting using {type_of_model}",
