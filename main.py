@@ -373,10 +373,13 @@ def graph_3(n_clicks, dropdown_value, stock_ticker, type_of_model, forecast):
         our_model = arma_model(log_ret, type_of_model, days_forecast)
         # undo log transform
         our_model = np.exp(our_model)
-        last_50 = our_model.tail(50)
+        last_30 = our_model.tail(30)
+        last_x = our_model.tail(forecast)
         # just copying indexes(dates) to create another column with date
-        fig = px.line(last_50, x=last_50.index, y="Adj_Close", title=f" {title.upper()} forecasting for {forecast} days, using {type_of_model} model",
+        fig = px.line(last_30, x=last_30.index, y="Adj_Close", title=f" {title.upper()} forecasting for {forecast} business days, using {type_of_model} model",
                       labels=dict(index="Date", Adj_Close="Price [USD]"))
+        # Only thing I figured is - I could do this
+        fig.add_scatter(x=last_x.index, y=last_x['Adj_Close'], showlegend=False)
         fig.update_layout(title_x=0.5)
         # Add range slider
         fig.update_layout(
