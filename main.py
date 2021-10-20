@@ -30,22 +30,22 @@ sidebar = dbc.FormGroup(
             id='dropdown',
             # pick one of the top ten active stock
             options=top_ten_active_stocks(),
-            multi=False,
         ),
         html.Br(),
         html.H6("Look up an arbitrary stock ticker", style={'textAlign': 'center'}),
         html.Div([
-            dcc.Input(id='stock_ticker', type='text', placeholder="e.g. MSFT",
+            dbc.Input(id='stock_ticker', type='text', placeholder="e.g. MSFT",
                       style={'margin-left': '25%', 'width': '50%'})
         ]),
         html.Br(),
         html.P("how many stocks to buy?", style={'textAlign': 'center'}),
-        dcc.Input(id="num_of_stocks", type="number", placeholder="e.g. 10",
+        dcc.Input(id="num_of_stocks", value=0, type="number", placeholder="e.g. 10",
                   style={'margin-left': '25%', 'width': '50%'}),
         html.Br(),
         html.Br(),
         html.P("avg return and volatility last X days", style={'textAlign': 'center'}),
-        dcc.Input(id="ret_and_vol", type="number", placeholder="e.g. 5", style={'margin-left': '25%', 'width': '50%'}),
+        dcc.Input(id="ret_and_vol", type="number", value=0, placeholder="e.g. 5",
+                  style={'margin-left': '25%', 'width': '50%'}),
         html.Br(),
         html.P(id='result', style={'color': 'blue', 'fontSize': 18, 'textAlign': 'center'}),
         html.Hr(),
@@ -174,7 +174,8 @@ app.layout = html.Div([
     [State('dropdown', 'value'),
      State('num_of_stocks', 'value'),
      State('stock_ticker', 'value'),
-     ])
+     ],
+)
 def total(n_clicks, dropdown_value, num_of_stocks, stock_ticker):
     """
      choosing last value (todays value) and only price
@@ -195,36 +196,31 @@ def total(n_clicks, dropdown_value, num_of_stocks, stock_ticker):
 
 
 @app.callback(
-    Output('dropdown', 'value'),
     Output('graph_1', 'figure'),
+    Output('dropdown', 'value'),
+    Output('stock_ticker', 'value'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
      State('stock_ticker', 'value')
-     ],
-    prevent_initial_call=True)
+     ], prevent_initial_call=True)
 # update our graph
 def graph_1(n_clicks, dropdown_value, stock_ticker):
     """
     print price of a given stock and a graph of the price history
     """
-    if dropdown_value is None and stock_ticker is None:
-        raise PreventUpdate
 
-    if dropdown_value is not None and stock_ticker is not None:
-        title = str(dropdown_value)
+    if dropdown_value:
         value = dropdown_value
-
-    if dropdown_value is not None:
-        title = str(dropdown_value)
-        value = dropdown_value
-
-    if stock_ticker is not None:
+        title = dropdown_value
+    elif stock_ticker:
         value = stock_ticker
         title = stock_ticker
-
+    else:
+        raise PreventUpdate
+    print("stock ticker type is: ", type(stock_ticker))
     df = get_data(value)
     price = round((df.iloc[-1]), 2)
-    fig = px.line(df, x=df.index, y="Adj_Close", title=f"{title} price, current price (USD) per stock is: {price}",
+    fig = px.line(df, x=df.index, y="Adj_Close", title=f"{title.upper()} price, current price (USD) per stock is: {price}",
                   labels=dict(x="Date", Adj_Close="Price [USD]"))
     fig.update_layout(title_x=0.5)
     # Add range slider
@@ -258,12 +254,11 @@ def graph_1(n_clicks, dropdown_value, stock_ticker):
         )
     )
 
-    return 0, fig
+    return fig, '', ''
 
 
 @app.callback(
     Output('graph_2', 'figure'),
-    Output('ret_and_vol', 'value'),
     [Input('submit_button', 'n_clicks')],
     [State('dropdown', 'value'),
      State('stock_ticker', 'value'),
@@ -275,14 +270,15 @@ def graph_2(n_clicks, dropdown_value, stock_ticker, ret_and_vol):
     print price of a given stock
     alternatively include average return and average volatility over a particular time period
     """
-    if dropdown_value is None and stock_ticker is None:
-        raise PreventUpdate
-    if dropdown_value is not None:
-        title = dropdown_value
+    if dropdown_value:
         value = dropdown_value
-    if stock_ticker is not None:
+        title = dropdown_value
+    elif stock_ticker:
         value = stock_ticker
         title = stock_ticker
+    else:
+        raise PreventUpdate
+
     if ret_and_vol is not None:
         days = ret_and_vol
 
@@ -293,9 +289,9 @@ def graph_2(n_clicks, dropdown_value, stock_ticker, ret_and_vol):
         avg = mean_log_return(log_ret[-days:])
         # volatility (std) of return
         vol = risk_of_return(log_ret[-days:])
-        text = f"{title} log daily return [%], average return and volatility over last {days} days: {avg}% [return], {vol}% [volatility] "
+        text = f"{title.upper()} log daily return [%], average return and volatility over last {days} days: {avg}% [return], {vol}% [volatility] "
     else:
-        text = f"{title} log daily return [%]"
+        text = f"{title.upper()} log daily return [%]"
     fig = px.line(log_ret, x=log_ret.index, y="Adj_Close", title=text,
                   labels=dict(x="Date", Adj_Close="log rate of return [%]"))
     fig.update_layout(title_x=0.5)
@@ -330,18 +326,20 @@ def graph_2(n_clicks, dropdown_value, stock_ticker, ret_and_vol):
         )
     )
 
-    return fig, 0
+    return fig
 
 
 @app.callback(
     Output('graph_3', 'figure'),
+    Output('type_of_model', 'value'),
     [Input('submit_button', 'n_clicks'),
      State('dropdown', 'value'),
+     State('stock_ticker', 'value'),
      State('type_of_model', 'value'),
      State('forecast', 'value')
      ])
 # graph 3
-def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
+def graph_3(n_clicks, dropdown_value, stock_ticker, type_of_model, forecast):
     """
     print price history over last 50 days and additional forecasting model: AR or MA or ARMA AR an MA
     order parameters (in a sense of the number of previous lags included in our model) in our model is by default set
@@ -349,15 +347,21 @@ def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
     as the model is used only for illustrative purposes in the first place.
 
     """
-    if dropdown_value is None:
+    if dropdown_value:
+        value = dropdown_value
+        title = dropdown_value
+    elif stock_ticker:
+        value = stock_ticker
+        title = stock_ticker
+    else:
         raise PreventUpdate
+
     if type_of_model is None:
         raise PreventUpdate
     if forecast == 0:
         raise PreventUpdate
     else:
-        # title = "".join(dropdown_value)
-        value = dropdown_value
+
         type_of_model = str(type_of_model)
         df = get_data(value)
         # only log data - it's not return cause the model has set up integrated order = 1, so it substitutes pct_change()
@@ -371,7 +375,7 @@ def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
         our_model = np.exp(our_model)
         last_50 = our_model.tail(50)
         # just copying indexes(dates) to create another column with date
-        fig = px.line(last_50, x=last_50.index, y="Adj_Close", title=f" forecasting using {type_of_model}",
+        fig = px.line(last_50, x=last_50.index, y="Adj_Close", title=f" {title.upper()} forecasting for {forecast} days, using {type_of_model} model",
                       labels=dict(index="Date", Adj_Close="Price [USD]"))
         fig.update_layout(title_x=0.5)
         # Add range slider
@@ -397,7 +401,7 @@ def graph_3(n_clicks, dropdown_value, type_of_model, forecast):
             )
         )
 
-        return fig
+        return fig, ''
 
 
 if __name__ == '__main__':
