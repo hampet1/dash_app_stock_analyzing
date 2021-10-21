@@ -390,4 +390,4 @@ def graph_3(n_clicks, dropdown_value, stock_ticker, type_of_model, forecast):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8085)
+    app.run_server(debug=True)
