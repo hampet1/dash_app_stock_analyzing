@@ -20,6 +20,9 @@ from model.model import arma_model
 # initialize dash
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+
+
+server = app.server
 # first create side bar and main page
 
 sidebar = dbc.FormGroup(
