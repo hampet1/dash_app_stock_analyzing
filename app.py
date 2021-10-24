@@ -14,16 +14,12 @@ from assets.styles import SIDEBAR, TOPBAR, CONTENT, CONTENT_TOP, FOOTER
 # functions for manipulation with default stock price
 from functions.funtions import get_data, log_return, top_ten_active_stocks, mean_log_return, risk_of_return, log
 
-# import stats model for forecasting
 from model.model import arma_model
 
 # initialize dash
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-
-
 server = app.server
-# first create side bar and main page
 
 sidebar = dbc.FormGroup(
     [
@@ -40,7 +36,7 @@ sidebar = dbc.FormGroup(
             dbc.Input(id='stock_ticker', type='text', placeholder="e.g. MSFT",
                       style={'margin-left': '25%', 'width': '50%'})
         ]),
-        html.Br(),
+        html.Hr(),
         html.P("how many stocks to buy?", style={'textAlign': 'center'}),
         dcc.Input(id="num_of_stocks", value=0, type="number", placeholder="e.g. 10",
                   style={'margin-left': '25%', 'width': '50%'}),

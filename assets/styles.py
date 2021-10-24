@@ -3,6 +3,11 @@ SIDEBAR = {
     'width': '20%',
     'float': 'left',
     'margin-top': '140px',
+    'background-color': '#F3F3F3',
+    'border-radius':'10px',
+    'border': '1px solid #F3F3F3',
+    'padding-top': '20px',
+    'padding': '10px',
 }
 
 CONTENT = {
