@@ -1,9 +1,9 @@
-import yfinance as yf
-import numpy as np
 from bs4 import BeautifulSoup
+import numpy as np
 import requests
+import yfinance as yf
+
 from dash.exceptions import PreventUpdate
-import pandas as pd
 
 
 def top_ten_active_stocks():
@@ -66,4 +66,3 @@ def mean_log_return(log_ret):
 
 def risk_of_return(log_ret):
     return round(log_ret.tail(30).std(), 2)
-
