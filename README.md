@@ -3,7 +3,7 @@
 
 #### The app's aim is to help people with checking out stock prices and their changes over time, mostly just via user friendly interactive graphs that are built using dash framework. On top of that a user can pick from 10 of the most active stocks based on yahoo.com or look up an arbitrary stock using its stock ticker.
 #### Another functionality includes the calculation of a particular number of stocks based on your choice.
-#### A Little bit more advanced functionality incorporates the possibility of checking out volatility and an average stock price over the last X amount of days, last but not least we can use one of 3 predictive models (MA-moving average, AR-autoregressive model, ARMA -autoregressive moving average model) to predict stock prices in the near future (up to 7 days).
+#### A Little bit more advanced functionality incorporates the possibility of checking out volatility and an average stock price over the last X number of days, last but not least we can use one of 3 predictive models (MA-moving average, AR-autoregressive model, ARMA -autoregressive moving average model) to predict stock prices in the near future (up to 7 days).
 
 ### how to approach this app: <br>
 <hr>
