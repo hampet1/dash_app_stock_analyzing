@@ -14,4 +14,4 @@
 <hr>
 
 ### dashboard/app available on 	[stock-price-analyzer.herokuapp.com](https://stock-price-analyzer.herokuapp.com/)
-### screenshot ![Alt text](/relative/path/to/img.jpg?raw=true "Optional Title")
+### screenshot ![screenshot](/app_stock.jpg?raw=true "Optional Title")
